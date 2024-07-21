@@ -12,7 +12,7 @@ import kotlin.math.abs
 const val EMPTY: Byte = 16
 const val DIM = 4
 val INITIAL_STATE = ByteArray(16) { (it + 1).toByte() }
-val TEST_STATE = byteArrayOf(1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,15)
+val TEST_STATE = byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 15)
 
 // MODEL: STATE
 var state = INITIAL_STATE.clone()
@@ -50,11 +50,33 @@ fun ix(row: Int, col: Int) = row * DIM + col
 fun isWin(state: ByteArray): Boolean =
     state.contentEquals(INITIAL_STATE)
 
+fun countInversions(state: ByteArray): Int {
+    val rowOfEmptyCell = row(state.indexOf(EMPTY))
+    var inversions = rowOfEmptyCell
+    repeat(state.size) {
+        if (state[it] != EMPTY)
+            for (j in it + 1..<state.size) {
+                if (state[j] != EMPTY && state[it] > state[j]) inversions++
+            }
+    }
+    return inversions
+}
+
+fun isFeasibleSolution(state: ByteArray): Boolean = countInversions(state) % 2 == 1
+
+fun getInitialState(): ByteArray {
+//    state = TEST_STATE
+    val res = INITIAL_STATE.clone()
+    do {
+        res.shuffle()
+    } while (!isFeasibleSolution(res))
+    return res
+}
+
 // CONTROLLER
 fun main() {
     println("Welcome to Fifteen Game!")
-//    state = TEST_STATE
-    state.shuffle()
+    state = getInitialState()
     while (!isWin(state)) {
         printBoard(state)
         val cell: Byte = readCell()
@@ -64,7 +86,10 @@ fun main() {
     println("You won!")
 }
 
-fun readCell(): Byte {
+fun readCell(
+    println: (String) -> Unit = ::println,
+    readln: () -> String = ::readln
+): Byte {
     while (true) {
         println("Enter cell to move (1..15):")
         val res = readln().toIntOrNull()
@@ -73,16 +98,20 @@ fun readCell(): Byte {
 }
 
 // VIEW
-fun printBoard(state: ByteArray, print: (String) -> Unit = ::print) {
-    print("-".repeat(18))
-    print("\n")
+fun printBoard(
+    state: ByteArray,
+    printer: (String) -> Unit = ::print
+) {
+    printer("-".repeat(18))
+    printer("\n")
     for (iRow in 0..<DIM) {
-        print("|")
+        printer("|")
         for (iCol in 0..<DIM) {
-            print(formatCell(state[ix(iRow, iCol)]))
+            printer(formatCell(state[ix(iRow, iCol)]))
         }
-        print("|\n")
+        printer("|\n")
     }
+    printer("------------------")
 }
 
 fun formatCell(cell: Byte) = "%3s ".format(if (cell == EMPTY) " " else cell)
