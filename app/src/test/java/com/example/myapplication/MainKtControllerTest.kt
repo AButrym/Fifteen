@@ -24,7 +24,7 @@ class MainKtControllerTest {
     @Test
     fun readCellWrongInputTest() {
         val expected: Byte = 12
-        val provided = mutableListOf("adfdas", "42", expected.toString())
+        val provided = listOf("adfdas", "42", expected.toString())
             .iterator()
         val expectedPrompt = """
             Enter cell to move (1..15):
@@ -35,8 +35,8 @@ class MainKtControllerTest {
         val output = StringBuilder()
 
         val res = readCell(
-            println = { output.appendLine(it) },
-            readln = { provided.next() })
+            println = output::appendLine,
+            readln = provided::next)
 
         assertEquals(expected, res)
         assertEquals(expectedPrompt, output.toString())
